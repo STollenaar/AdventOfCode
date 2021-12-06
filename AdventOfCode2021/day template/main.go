@@ -2,11 +2,15 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"os"
+	"time"
 )
 
 func main() {
+	start := time.Now()
+
 	f, err := os.Open("input.txt")
 
 	if err != nil {
@@ -24,4 +28,6 @@ func main() {
 			log.Fatal(err)
 		}
 	}
+	fmt.Println("Execution time for part : ", elapsed)
+
 }
