@@ -111,7 +111,7 @@ func doPart2(heightMap [][]*int, start time.Time) {
 	fmt.Println("Total risk for part 2: ", totalSize)
 }
 
-// Classic breathfirst search
+// Classic depth first search
 func search(lowPoint LowPoint, heightMap [][]*int, visitedPoints *[]LowPoint, basinSize int) int {
 	basinSize++
 	*visitedPoints = append(*visitedPoints, lowPoint)
