@@ -20,6 +20,7 @@ type Packet struct {
 	subPackets []*Packet
 }
 
+// Simple version sum for part 1
 func (p *Packet) getVersionSum() (versionSum int) {
 	versionSum += p.version
 	for _, subPacket := range p.subPackets {
@@ -28,6 +29,17 @@ func (p *Packet) getVersionSum() (versionSum int) {
 	return versionSum
 }
 
+// Get the value of the packet, if operation packet keep going
+// 	down till a literal packet has been reached
+func (p *Packet) getValue() int {
+	if p.operatorType == 4 {
+		return p.value
+	} else {
+		return p.doOperation()
+	}
+}
+
+// Hardest part of this problem, parsing the subpackets correctly
 func createPacket(packetString string) (*Packet, string) {
 	var packet Packet
 
@@ -100,97 +112,50 @@ func (p *Packet) doOperation() (value int) {
 	switch p.operatorType {
 	case 0:
 		for _, subPacket := range p.subPackets {
-			if subPacket.operatorType == 4 {
-				value += subPacket.value
-			} else {
-				value += subPacket.doOperation()
-			}
+			value += subPacket.getValue()
 		}
 	case 1:
 		value = 1
 		for _, subPacket := range p.subPackets {
-			if subPacket.operatorType == 4 {
-				value *= subPacket.value
-			} else {
-				value *= subPacket.doOperation()
-			}
+			value *= subPacket.getValue()
 		}
 	case 2:
 		for i, subPacket := range p.subPackets {
-			var subPacketValue int
-			if subPacket.operatorType == 4 {
-				subPacketValue = subPacket.value
-			} else {
-				subPacketValue = subPacket.doOperation()
-			}
+			subPacketValue := subPacket.getValue()
 			if i == 0 || subPacketValue < value {
 				value = subPacketValue
 			}
 		}
 	case 3:
 		for i, subPacket := range p.subPackets {
-			var subPacketValue int
-			if subPacket.operatorType == 4 {
-				subPacketValue = subPacket.value
-			} else {
-				subPacketValue = subPacket.doOperation()
-			}
+			subPacketValue := subPacket.getValue()
 			if i == 0 || subPacketValue > value {
 				value = subPacketValue
 			}
 		}
 	case 5:
-		var subPacket1, subPacket2 int
-		if p.subPackets[0].operatorType == 4 {
-			subPacket1 = p.subPackets[0].value
-		} else {
-			subPacket1 = p.subPackets[0].doOperation()
-		}
-		if p.subPackets[1].operatorType == 4 {
-			subPacket2 = p.subPackets[1].value
-		} else {
-			subPacket2 = p.subPackets[1].doOperation()
-		}
+		subPacket1, subPacket2 := p.subPackets[0].getValue(), p.subPackets[1].getValue()
 		if subPacket1 > subPacket2 {
 			value = 1
 		} else {
 			value = 0
 		}
 	case 6:
-		var subPacket1, subPacket2 int
-		if p.subPackets[0].operatorType == 4 {
-			subPacket1 = p.subPackets[0].value
-		} else {
-			subPacket1 = p.subPackets[0].doOperation()
-		}
-		if p.subPackets[1].operatorType == 4 {
-			subPacket2 = p.subPackets[1].value
-		} else {
-			subPacket2 = p.subPackets[1].doOperation()
-		}
+		subPacket1, subPacket2 := p.subPackets[0].getValue(), p.subPackets[1].getValue()
 		if subPacket1 < subPacket2 {
 			value = 1
 		} else {
 			value = 0
 		}
 	case 7:
-		var subPacket1, subPacket2 int
-		if p.subPackets[0].operatorType == 4 {
-			subPacket1 = p.subPackets[0].value
-		} else {
-			subPacket1 = p.subPackets[0].doOperation()
-		}
-		if p.subPackets[1].operatorType == 4 {
-			subPacket2 = p.subPackets[1].value
-		} else {
-			subPacket2 = p.subPackets[1].doOperation()
-		}
+		subPacket1, subPacket2 := p.subPackets[0].getValue(), p.subPackets[1].getValue()
 		if subPacket1 == subPacket2 {
 			value = 1
 		} else {
 			value = 0
 		}
 	default:
+		// How did we get here? did the matrix break?
 		log.Fatal("Unknown operatorType: ", p.operatorType)
 	}
 	return value
