@@ -28,24 +28,24 @@ func (p *Packet) getVersionSum() (versionSum int) {
 	return versionSum
 }
 
-func createPacket(packetString string) *Packet {
+func createPacket(packetString string) (*Packet, string) {
 	var packet Packet
 
 	versionString := packetString[:3]
 	packetString = packetString[3:]
-	versionNumber, _ := strconv.ParseUint(versionString, 2, 32)
+	versionNumber, _ := strconv.ParseUint(versionString, 2, 64)
 	packet.version = int(versionNumber)
 
 	operatorTypeString := packetString[:3]
 	packetString = packetString[3:]
-	operatorTypeNumber, _ := strconv.ParseUint(operatorTypeString, 2, 32)
+	operatorTypeNumber, _ := strconv.ParseUint(operatorTypeString, 2, 64)
 	packet.operatorType = int(operatorTypeNumber)
 
 	if packet.operatorType != 4 {
 
 		lengthTypeString := packetString[:1]
 		packetString = packetString[1:]
-		lengthTypeNumber, _ := strconv.ParseUint(lengthTypeString, 2, 32)
+		lengthTypeNumber, _ := strconv.ParseUint(lengthTypeString, 2, 64)
 		packet.lengthType = int(lengthTypeNumber)
 
 		var lengthString string
@@ -56,28 +56,24 @@ func createPacket(packetString string) *Packet {
 			lengthString = packetString[:11]
 			packetString = packetString[11:]
 		}
-		lengthNumber, _ := strconv.ParseUint(lengthString, 2, 32)
+		lengthNumber, _ := strconv.ParseUint(lengthString, 2, 64)
 		packet.length = int(lengthNumber)
 
 		// Current packet has a subpacket at this point
 		if lengthTypeNumber == 0 {
-			subpacketAString := packetString[:11]
-			packetString = packetString[11:]
-			packet.subPackets = append(packet.subPackets, createPacket(subpacketAString))
+			subPackets := packetString[:lengthNumber]
+			packetString = packetString[lengthNumber:]
 
-			if lengthNumber > 11 {
-				subpacketBString := packetString[:lengthNumber-11]
-				packet.subPackets = append(packet.subPackets, createPacket(subpacketBString))
+			for subPackets != strings.Repeat("0", len(subPackets)) {
+				subPacket, nextSubPacket := createPacket(subPackets)
+				packet.subPackets = append(packet.subPackets, subPacket)
+				subPackets = nextSubPacket
 			}
 		} else {
-			if lengthNumber == 1 {
-				packet.subPackets = append(packet.subPackets, createPacket(packetString))
-			} else {
-				for i := 0; i < int(lengthNumber); i++ {
-					subPacketString := packetString[:11]
-					packetString = packetString[11:]
-					packet.subPackets = append(packet.subPackets, createPacket(subPacketString))
-				}
+			for i := 0; i < int(lengthNumber); i++ {
+				subPacket, returnedPacket := createPacket(packetString)
+				packet.subPackets = append(packet.subPackets, subPacket)
+				packetString = returnedPacket
 			}
 		}
 
@@ -94,10 +90,110 @@ func createPacket(packetString string) *Packet {
 				break
 			}
 		}
-		valuenumber, _ := strconv.ParseUint(valueString, 2, 32)
+		valuenumber, _ := strconv.ParseUint(valueString, 2, 64)
 		packet.value = int(valuenumber)
 	}
-	return &packet
+	return &packet, packetString
+}
+
+func (p *Packet) doOperation() (value int) {
+	switch p.operatorType {
+	case 0:
+		for _, subPacket := range p.subPackets {
+			if subPacket.operatorType == 4 {
+				value += subPacket.value
+			} else {
+				value += subPacket.doOperation()
+			}
+		}
+	case 1:
+		value = 1
+		for _, subPacket := range p.subPackets {
+			if subPacket.operatorType == 4 {
+				value *= subPacket.value
+			} else {
+				value *= subPacket.doOperation()
+			}
+		}
+	case 2:
+		for i, subPacket := range p.subPackets {
+			var subPacketValue int
+			if subPacket.operatorType == 4 {
+				subPacketValue = subPacket.value
+			} else {
+				subPacketValue = subPacket.doOperation()
+			}
+			if i == 0 || subPacketValue < value {
+				value = subPacketValue
+			}
+		}
+	case 3:
+		for i, subPacket := range p.subPackets {
+			var subPacketValue int
+			if subPacket.operatorType == 4 {
+				subPacketValue = subPacket.value
+			} else {
+				subPacketValue = subPacket.doOperation()
+			}
+			if i == 0 || subPacketValue > value {
+				value = subPacketValue
+			}
+		}
+	case 5:
+		var subPacket1, subPacket2 int
+		if p.subPackets[0].operatorType == 4 {
+			subPacket1 = p.subPackets[0].value
+		} else {
+			subPacket1 = p.subPackets[0].doOperation()
+		}
+		if p.subPackets[1].operatorType == 4 {
+			subPacket2 = p.subPackets[1].value
+		} else {
+			subPacket2 = p.subPackets[1].doOperation()
+		}
+		if subPacket1 > subPacket2 {
+			value = 1
+		} else {
+			value = 0
+		}
+	case 6:
+		var subPacket1, subPacket2 int
+		if p.subPackets[0].operatorType == 4 {
+			subPacket1 = p.subPackets[0].value
+		} else {
+			subPacket1 = p.subPackets[0].doOperation()
+		}
+		if p.subPackets[1].operatorType == 4 {
+			subPacket2 = p.subPackets[1].value
+		} else {
+			subPacket2 = p.subPackets[1].doOperation()
+		}
+		if subPacket1 < subPacket2 {
+			value = 1
+		} else {
+			value = 0
+		}
+	case 7:
+		var subPacket1, subPacket2 int
+		if p.subPackets[0].operatorType == 4 {
+			subPacket1 = p.subPackets[0].value
+		} else {
+			subPacket1 = p.subPackets[0].doOperation()
+		}
+		if p.subPackets[1].operatorType == 4 {
+			subPacket2 = p.subPackets[1].value
+		} else {
+			subPacket2 = p.subPackets[1].doOperation()
+		}
+		if subPacket1 == subPacket2 {
+			value = 1
+		} else {
+			value = 0
+		}
+	default:
+		log.Fatal("Unknown operatorType: ", p.operatorType)
+	}
+	return value
 }
 
 func main() {
@@ -121,7 +217,7 @@ func main() {
 
 		for _, char := range strings.Split(hexString, "") {
 
-			data, _ := strconv.ParseUint(char, 16, 32)
+			data, _ := strconv.ParseUint(char, 16, 64)
 			bin := fmt.Sprintf("%004b", data)
 			binaryString += bin
 		}
@@ -132,93 +228,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	packet := createPacket(binaryString)
+	packet, _ := createPacket(binaryString)
 
 	elapsed := time.Since(start)
 	fmt.Println("Execution time for part 1: ", elapsed)
-	fmt.Println("packets numbers for part 1: ", packet.getVersionSum())
+	fmt.Println("Version sum for part 1: ", packet.getVersionSum())
 
-}
-
-func doSubPacket(packet string) {
-	subPacket := packet
-
-	subPacketVersionString := packet[:3]
-	packet = packet[3:]
-	subPacketVersionNumber, _ := strconv.ParseUint(subPacketVersionString, 2, 32)
-	fmt.Println("Subpacket version: ", subPacketVersionNumber)
-
-	subPacketTypeIdString := packet[:3]
-	packet = packet[3:]
-	subPacketTypeIdNumber, _ := strconv.ParseUint(subPacketTypeIdString, 2, 32)
-
-	// Literal value
-	if subPacketTypeIdNumber == 4 {
-
-	} else {
-		subPacketLengthTypeIdString := packet[:1]
-		packet = packet[1:]
-		subPacketLengthTypeIdNumber, _ := strconv.ParseUint(subPacketLengthTypeIdString, 2, 32)
-
-		var subPacketLengthString string
-
-		if subPacketLengthTypeIdNumber == 1 {
-			subPacketLengthString = packet[:11]
-			packet = packet[11:]
-		} else {
-			subPacketLengthString = packet[:15]
-			packet = packet[15:]
-		}
-
-		subPacketLengthNumber, _ := strconv.ParseUint(subPacketLengthString, 2, 32)
-		if subPacketLengthNumber != 0 {
-			if subPacketLengthTypeIdNumber == 1 {
-				fmt.Println(len(packet))
-				// subPacketLength := (len(packet) / int(subPacketLengthNumber))
-				for i := 0; i < int(subPacketLengthNumber); i++ {
-					subPacketString := packet[:11]
-					packet = packet[11:]
-					doSubPacket(subPacketString)
-				}
-			} else {
-				subPacketString := packet[:subPacketLengthNumber]
-				packet = packet[subPacketLengthNumber:]
-
-				subPacketAString := subPacketString[:11]
-				subPacketA := subPacketAString
-				subPacketString = subPacketString[11:]
-
-				subPacketAVersionString := subPacketAString[:3]
-				subPacketAString = subPacketAString[3:]
-				subPacketAVersionNumber, _ := strconv.ParseUint(subPacketAVersionString, 2, 32)
-
-				subPacketATypeIdString := subPacketAString[:3]
-				subPacketAString = subPacketAString[3:]
-				subPacketATypeIdNumber, _ := strconv.ParseUint(subPacketATypeIdString, 2, 32)
-
-				subPacketALiteralString := subPacketAString
-				subPacketALiteralNumber, _ := strconv.ParseUint(subPacketALiteralString, 2, 32)
-				fmt.Println("Subpacket A for part 1: ", subPacketA, " Version: ", subPacketAVersionNumber, " ", subPacketATypeIdNumber, " ", subPacketALiteralNumber)
-
-				if subPacketLengthNumber != 11 {
-					subPacketBString := subPacketString[:subPacketLengthNumber-11]
-					subPacketB := subPacketBString
-
-					subPacketBVersionString := subPacketAString[:3]
-					subPacketBString = subPacketBString[3:]
-					subPacketBVersionNumber, _ := strconv.ParseUint(subPacketBVersionString, 2, 32)
-
-					subPacketBTypeIdString := subPacketBString[:3]
-					subPacketBString = subPacketBString[3:]
-					subPacketBTypeIdNumber, _ := strconv.ParseUint(subPacketBTypeIdString, 2, 32)
-
-					subPacketBLiteralString := subPacketBString
-					subPacketBLiteralNumber, _ := strconv.ParseUint(subPacketBLiteralString, 2, 32)
-					fmt.Println("Subpacket B for part 1: ", subPacketB, " ", subPacketBVersionNumber, " ", subPacketBTypeIdNumber, " ", subPacketBLiteralNumber)
-				}
-			}
-		}
-	}
-
-	fmt.Println("Subpacket for part 1: ", subPacket, " ", subPacketVersionNumber, " ", subPacketTypeIdNumber)
+	start = time.Now()
+	fmt.Println("Execution time for part 2: ", elapsed)
+	fmt.Println("Operation result for part 2: ", packet.doOperation())
 }
