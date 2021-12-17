@@ -41,7 +41,7 @@ func (p *Pairs) getOccurences(char string) (occurences int) {
 
 	for _, pair := range *p {
 		elements := strings.Split(pair.pair, "")
-		oc[elements[0]]++
+		// oc[elements[0]]++
 		oc[elements[1]]++
 	}
 	return oc[char]
@@ -50,7 +50,7 @@ func (p *Pairs) getOccurences(char string) (occurences int) {
 func (p *Pairs) getMinElement() (occurence int) {
 	elements := p.getElementsAmount()
 
-	occurence = math.MaxInt32
+	occurence = math.MaxInt64
 	for _, el := range elements {
 		if el < occurence {
 			occurence = el
@@ -75,7 +75,7 @@ func (p *Pairs) getElementsAmount() (elements map[string]int) {
 		}
 	}
 	for key := range elements {
-		elements[key] /= elementOccurences[key]
+		elements[key] = int(math.Ceil(float64(elements[key]) / 2.0))
 	}
 
 	return elements
