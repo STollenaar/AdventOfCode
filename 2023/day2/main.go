@@ -69,5 +69,5 @@ func part2(lines []string) {
 		}
 		sum += (cubes["red"] * cubes["blue"] * cubes["green"])
 	}
-	fmt.Printf("Solution for Part1: %d\n", sum)
+	fmt.Printf("Solution for Part2: %d\n", sum)
 }
