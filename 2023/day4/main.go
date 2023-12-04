@@ -25,26 +25,22 @@ func main() {
 		numbers = strings.TrimSpace(numbers)
 
 		winning, actual := strings.Split(numbers, "|")[0], strings.Split(numbers, "|")[1]
-		winning = strings.TrimSpace(winning)
-		actual = strings.TrimSpace(actual)
+		winning, actual = strings.TrimSpace(winning), strings.TrimSpace(actual)
 
 		winningSl, actualSl := strings.Split(winning, " "), strings.Split(actual, " ")
-		actualSl = removeEmpty(actualSl)
-		actualSl = dedub(actualSl)
+		actualSl = dedub(removeEmpty(actualSl))
 		for _, a := range actualSl {
 			if inSlice(a, winningSl) {
 				matching++
 			}
 		}
-		fmt.Printf("Total winning numbers: %d, ", matching)
 		if matching > 0 {
 			totalScore = int(math.Pow(2, float64(matching)-1))
 			for x := 1; x < matching+1; x++ {
 				cards[x+i] += cards[i]
 			}
 		}
-		fmt.Printf("winning value: %d\n", totalScore)
-		total += matching
+		total += totalScore
 	}
 	fmt.Printf("Solution part1: %d\n", total)
 	fmt.Printf("Solution part2: %d\n", totalCards)
