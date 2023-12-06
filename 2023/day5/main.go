@@ -105,16 +105,16 @@ func part2(seedPairs []int) {
 	for i := 8; i < len(seedPairs); i += 2 {
 		seeds := make([]int, seedPairs[i+1])
 		j := 0
-		startTime := time.Now()
-		fmt.Printf("Generating seeds for Part2 iteration: %d/%d\n", i, len(seedPairs))
+		// startTime := time.Now()
+		// fmt.Printf("Generating seeds for Part2 iteration: %d/%d\n", i, len(seedPairs))
 		for k := seedPairs[i]; k < seedPairs[i]+seedPairs[i+1]; k++ {
 			seeds[j] = k
 			j++
 		}
 
-		endTime := time.Now()
-		fmt.Printf("Done generating seeds for Part2 iteration %d/%d. Took %v\n", i, len(seedPairs), endTime.Sub(startTime))
-		startTime = endTime
+		// endTime := time.Now()
+		// fmt.Printf("Done generating seeds for Part2 iteration %d/%d. Took %v\n", i, len(seedPairs), endTime.Sub(startTime))
+		// startTime = endTime
 		for _, seed := range seeds {
 			soil := getDest(seed, seedToSoil)
 			fert := getDest(soil, soilToFert)
@@ -127,8 +127,8 @@ func part2(seedPairs []int) {
 				minLocation = loc
 			}
 		}
-		endTime = time.Now()
-		fmt.Printf("Done checking seeds for Part2 iteration %d/%d. Took %v\n", i, len(seedPairs), endTime.Sub(startTime))
+		// endTime = time.Now()
+		// fmt.Printf("Done checking seeds for Part2 iteration %d/%d. Took %v\n", i, len(seedPairs), endTime.Sub(startTime))
 	}
 	fmt.Printf("Solution for Part2: %d\n", int(minLocation))
 }
