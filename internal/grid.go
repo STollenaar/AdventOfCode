@@ -78,6 +78,9 @@ func (g *Grid[T]) GetUnsafeColumn(x, y int) T {
 
 // Tries to safely get a column, will apply GetSafeRow function. Throws error if the x value is not valid
 func (g *Grid[T]) GetSafeColumn(x, y int) T {
+	for len(g.GetSafeRow(y)) <= x {
+		g.AddUnsafeToColumn(g.empty, y)
+	}
 	return g.GetSafeRow(y)[x]
 }
 
@@ -89,4 +92,9 @@ func (g *Grid[T]) GetHeight(x int) int {
 		}
 	}
 	return len(g.Rows) - 1
+}
+
+// Set the empty value
+func (g *Grid[T]) SetEmpty(in T) {
+	g.empty = in
 }
