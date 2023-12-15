@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/STollenaar/AdventOfCode2022/internal"
+	"github.com/STollenaar/AdventOfCode/internal"
 )
 
 type Queue struct {

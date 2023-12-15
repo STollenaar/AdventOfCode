@@ -1,4 +1,4 @@
-module github.com/STollenaar/AdventOfCode2022
+module github.com/STollenaar/AdventOfCode
 
 go 1.18
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	internal "github.com/STollenaar/AdventOfCode2022/internal"
+	internal "github.com/STollenaar/AdventOfCode/internal"
 )
 
 type Strat struct {

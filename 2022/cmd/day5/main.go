@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/STollenaar/AdventOfCode2022/internal"
+	"github.com/STollenaar/AdventOfCode/internal"
 	"golang.org/x/exp/slices"
 )
 
