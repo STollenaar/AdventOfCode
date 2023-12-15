@@ -1,7 +1,6 @@
 go 1.21.1
 
 use (
-	"./2021/day template"
 	./2021/day1
 	./2021/day10
 	./2021/day11
@@ -27,4 +26,5 @@ use (
 	./2022
 	./2023
 	./internal
+	./skaff
 )
