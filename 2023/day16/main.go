@@ -33,8 +33,8 @@ func main() {
 		grid = append(grid, row)
 	}
 
-	// total := loopBeams([]*Node{{x: 0, y: 0, direction: []int{0, 1}}})
-	// fmt.Printf("Solution for part 1: %d\n", total)
+	total := loopBeams([]*Node{{x: 0, y: 0, direction: []int{0, 1}}})
+	fmt.Printf("Solution for part 1: %d\n", total)
 	go queueHandler()
 	var waitGroup sync.WaitGroup
 	var mu sync.Mutex
