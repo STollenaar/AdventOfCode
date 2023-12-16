@@ -33,8 +33,8 @@ func main() {
 		grid = append(grid, row)
 	}
 
-	total := loopBeams([]*Node{{x: 0, y: 0, direction: []int{0, 1}}})
-	fmt.Printf("Solution for part 1: %d\n", total)
+	// total := loopBeams([]*Node{{x: 0, y: 0, direction: []int{0, 1}}})
+	// fmt.Printf("Solution for part 1: %d\n", total)
 	go queueHandler()
 	var waitGroup sync.WaitGroup
 	var mu sync.Mutex
@@ -80,7 +80,7 @@ func main() {
 
 			waitGroup.Done()
 		}(x, &waitGroup, &mu)
-		waitGroup.Wait()
+		// waitGroup.Wait()
 	}
 	for y := 0; y < len(grid); y++ {
 		waitGroup.Add(8)
@@ -125,8 +125,9 @@ func main() {
 
 			waitGroup.Done()
 		}(y, &waitGroup, &mu)
-		waitGroup.Wait()
+		// waitGroup.Wait()
 	}
+	waitGroup.Wait()
 	fmt.Printf("Solution for part 2: %d\n", slices.Max(totals))
 }
 
@@ -134,7 +135,7 @@ func queueHandler() {
 	for {
 		i := <-queue
 		totalDone++
-		// fmt.Printf("Remaining groups %d/%d\n",totalDone, totalGroups)
+		fmt.Printf("Remaining groups %d/%d\n",totalDone, totalGroups)
 		totals = append(totals, i)
 	}
 }
