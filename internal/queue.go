@@ -3,13 +3,21 @@ package internal
 import "sort"
 
 type Queue[T comparable] struct {
-	Elements     []T
-	SortFunction func(i, j int) bool
+	Elements      []T
+	SortFunction  func(i, j int) bool
+	EqualFunction func(input ...T) bool
 }
 
 // Add element to the end of the queue
-func (q *Queue[T]) Push(p T) {
-	q.Elements = append(q.Elements, p)
+func (q *Queue[T]) Push(p ...T) {
+	q.Elements = append(q.Elements, p...)
+}
+
+// Add element to the end of the queue if not there
+func (q *Queue[T]) PushUnique(p ...T) {
+	if !q.EqualFunction(p...) {
+		q.Elements = append(q.Elements, p...)
+	}
 }
 
 // Add element to beginning of the queue
