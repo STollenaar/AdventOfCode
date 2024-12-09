@@ -2,7 +2,11 @@ package main
 
 import (
 	"fmt"
+	"maps"
 	"slices"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/STollenaar/AdventOfCode/internal"
 )
@@ -18,11 +22,13 @@ var (
 		visited: make(map[string][]string),
 	}
 	currentX, currentY, startX, startY int
-	direction          string
+	mainLoop                           = make(map[string][]string)
+	direction                          string
 )
 
 func main() {
 	lines := internal.Reader()
+	start := time.Now()
 
 	for y, line := range lines {
 		for x, c := range line {
@@ -38,12 +44,14 @@ func main() {
 		}
 	}
 	doWalk()
+	maps.Copy(mainLoop, grid.visited)
 
-	fmt.Printf("Part 1: %d\n", len(grid.visited))
-	fmt.Printf("Part 2: %d\n", doPart2())
+	fmt.Printf("Part 1: %d, Duration: %v\n", len(grid.visited), time.Since(start))
+	start = time.Now()
+	fmt.Printf("Part 2: %d, Duration: %v\n", doPart2(), time.Since(start))
 }
 
-func doWalk() bool{
+func doWalk() bool {
 	for {
 		switch direction {
 		case "^":
@@ -92,21 +100,23 @@ func doWalk() bool{
 	}
 }
 
-func doPart2() (total int){
+func doPart2() (total int) {
 
-	for y, row := range grid.Rows {
-		for x, c := range row {
-			grid.visited = make(map[string][]string)
-			currentX = startX
-			currentY = startY
-			direction = "^"
-			if string(c) == "." {
-				grid.SetSafeColumn("#", x,y)
-				if doWalk() {
-					total++
-				}
-				grid.SetSafeColumn(".", x,y)
+	for k := range mainLoop {
+		t := strings.Split(k, "-")
+		x, _ := strconv.Atoi(t[0])
+		y, _ := strconv.Atoi(t[1])
+
+		grid.visited = make(map[string][]string)
+		currentX = startX
+		currentY = startY
+		direction = "^"
+		if grid.GetSafeColumn(x, y) == "." {
+			grid.SetSafeColumn("#", x, y)
+			if doWalk() {
+				total++
 			}
+			grid.SetSafeColumn(".", x, y)
 		}
 	}
 	return
