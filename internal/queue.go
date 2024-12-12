@@ -34,6 +34,15 @@ func (q *Queue[T]) Delete(point T) {
 	}
 }
 
+func (q *Queue[T]) Find(p T) interface{} {
+	for _, iQ := range q.Elements {
+		if q.EqualFunction(iQ, p) {
+			return iQ
+		}
+	}
+	return nil
+}
+
 // Get element from the start of the queue
 func (q *Queue[T]) Shift() T {
 	e := q.Elements[0]
