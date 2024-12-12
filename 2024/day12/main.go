@@ -64,9 +64,9 @@ func main() {
 	for _, plot := range plots {
 		area := plot.getArea()
 		per := plot.getPer()
-		sides := plot.getSides()
+		outer := plot.getInnerWalls()
 		totalPart1 += (area * len(per))
-		totalPart2 += (area * sides)
+		totalPart2 += (area * outer)
 	}
 
 	fmt.Printf("Part 1: %d\n", totalPart1)
@@ -74,80 +74,53 @@ func main() {
 
 }
 
-func (p *Plot) isNeighbor(x, y int) bool {
-	for _, place := range p.places {
-		if place.x-1 == x && place.y == y {
-			return true
-		} else if place.x+1 == x && place.y == y {
-			return true
-		} else if place.x == x && place.y-1 == y {
-			return true
-		} else if place.x == x && place.y+1 == y {
-			return true
-		}
-	}
-	return false
-}
-
+// Checks the outer wall only
 func (p *Plot) getPer() (per []*Node) {
 	for _, place := range p.places {
-		if !contains(p.places, &Node{x: place.x - 1, y: place.y}) {
-			per = append(per, &Node{x: place.x - 1, y: place.y})
+		// Check each neighbor (up, down, left, right)
+		neighbors := []struct{ x, y int }{
+			{place.x - 1, place.y},
+			{place.x + 1, place.y},
+			{place.x, place.y - 1},
+			{place.x, place.y + 1},
 		}
-		if !contains(p.places, &Node{x: place.x + 1, y: place.y}) {
-			per = append(per, &Node{x: place.x + 1, y: place.y})
-		}
-		if !contains(p.places, &Node{x: place.x, y: place.y - 1}) {
-			per = append(per, &Node{x: place.x, y: place.y - 1})
-		}
-		if !contains(p.places, &Node{x: place.x, y: place.y + 1}) {
-			per = append(per, &Node{x: place.x, y: place.y + 1})
+
+		for _, neighbor := range neighbors {
+			node := &Node{x: neighbor.x, y: neighbor.y}
+			if !contains(p.places, node) {
+				per = append(per, node)
+			}
 		}
 	}
 	return
 }
 
-func (p *Plot) getSides() (total int) {
-	per := p.places
-	x, y := per[0].x, per[0].y
-	dx, dy := 1, 0
-	
-	var steps int
-	plotSize := len(p.getPer())
-	for steps != plotSize {
-
-		if contains(per, &Node{x: x + dx, y: y + dy}) {
-			if dx == 1 && contains(per, &Node{x: x + dx, y: y - 1}) {
-				total++
-				x, y = x+dx, y+dy
-				dx, dy = 0, -1
-			} else if dx == -1 && contains(per, &Node{x: x + dx, y: y + 1}) {
-				total++
-				x, y = x+dx, y+dy
-				dx, dy = 0, 1
-			} else if dy == 1 && contains(per, &Node{x: x + 1, y: y + dy}) {
-				total++
-				x, y = x+dx, y+dy
-				dx, dy = 1, 0
-			} else if dy == -1 && contains(per, &Node{x: x - 1, y: y + dy}) {
-				total++
-				x, y = x+dx, y+dy
-				dx, dy = -1, 0
-			}
-			x, y = x+dx, y+dy
-		} else {
+func (p *Plot) getInnerWalls() (total int) {
+	for _, place := range p.places {
+		if !contains(p.places, &Node{x: place.x + 1, y: place.y}) && !contains(p.places, &Node{x: place.x, y: place.y - 1}) {
 			total++
-			if dx == 1 {
-				dx, dy = 0, 1
-			} else if dx == -1 {
-				dx, dy = 0, -1
-			} else if dy == 1 {
-				dx, dy = -1, 0
-			} else {
-				dx, dy = 1, 0
-			}
 		}
-		steps++
+		if !contains(p.places, &Node{x: place.x - 1, y: place.y}) && !contains(p.places, &Node{x: place.x, y: place.y - 1}) {
+			total++
+		}
+		if !contains(p.places, &Node{x: place.x + 1, y: place.y}) && !contains(p.places, &Node{x: place.x, y: place.y + 1}) {
+			total++
+		}
+		if !contains(p.places, &Node{x: place.x - 1, y: place.y}) && !contains(p.places, &Node{x: place.x, y: place.y + 1}) {
+			total++
+		}
+		if contains(p.places, &Node{x: place.x - 1, y: place.y}) && contains(p.places, &Node{x: place.x, y: place.y + 1}) && !contains(p.places, &Node{x: place.x - 1, y: place.y + 1}) {
+			total++
+		}
+		if contains(p.places, &Node{x: place.x + 1, y: place.y}) && contains(p.places, &Node{x: place.x, y: place.y - 1}) && !contains(p.places, &Node{x: place.x + 1, y: place.y - 1}) {
+			total++
+		}
+		if contains(p.places, &Node{x: place.x + 1, y: place.y}) && contains(p.places, &Node{x: place.x, y: place.y + 1}) && !contains(p.places, &Node{x: place.x + 1, y: place.y + 1}) {
+			total++
+		}
+		if contains(p.places, &Node{x: place.x - 1, y: place.y}) && contains(p.places, &Node{x: place.x, y: place.y - 1}) && !contains(p.places, &Node{x: place.x - 1, y: place.y - 1}) {
+			total++
+		}
 	}
 	return
 }
