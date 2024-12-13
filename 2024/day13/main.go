@@ -54,21 +54,34 @@ func main() {
 		})
 	}
 
-	var total int
+	var totalPart1, totalPart2 int
 	for _, machine := range machines {
-		a := (machine.prize.x - (machine.prize.y * machine.buttonB.x / machine.buttonB.y)) / (machine.buttonA.x - (machine.buttonA.y * machine.buttonB.x / machine.buttonB.y))
-		b := (machine.prize.y - machine.buttonA.y*a) / machine.buttonB.y
-		fmt.Println(a, isInteger(a), b, isInteger(b))
-		fmt.Printf("For Prize: %v, ButtonA: %f, ButtonB: %f\n", machine.prize, a, b)
+		a, b := solve(machine)
 		if isInteger(a) && isInteger(b) {
-			fmt.Printf("For Prize: %v, ButtonA: %.0f, ButtonB: %.0f\n", machine.prize, a, b)
-			total += (int(a)*3 + int(b))
+			totalPart1 += (int(a)*3 + int(b))
 		}
 	}
-	fmt.Printf("Total tokens: %d\n", total)
+	fmt.Printf("Part 1: %d\n", totalPart1)
+
+	for _, machine := range machines {
+		machine.prize.x += 10000000000000
+		machine.prize.y += 10000000000000
+		a, b := solve(machine)
+		if isInteger(a) && isInteger(b) {
+			totalPart2 += (int(a)*3 + int(b))
+		}
+	}
+	fmt.Printf("Part 2: %d\n", totalPart2)
 }
 
-// Function to check if a number is close to an integer within a tolerance
+// Function to deal with stupid float precious
 func isInteger(value float64) bool {
 	return math.Abs(value-math.Round(value)) < epsilon
+}
+
+// I am bad at Math. Thanks internet strangers for equation, failed my linear algebra courses a couple of times
+func solve(machine Machine) (a, b float64) {
+	a = ((machine.prize.x * machine.buttonB.y) - (machine.prize.y * machine.buttonB.x)) / ((machine.buttonA.x * machine.buttonB.y) - (machine.buttonA.y * machine.buttonB.x))
+	b = ((machine.buttonA.x * machine.prize.y) - (machine.buttonA.y * machine.prize.x)) / ((machine.buttonA.x * machine.buttonB.y) - (machine.buttonA.y * machine.buttonB.x))
+	return
 }
