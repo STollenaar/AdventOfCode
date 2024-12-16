@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"time"
 
 	"github.com/STollenaar/AdventOfCode/internal"
 )
@@ -57,18 +58,25 @@ func main() {
 			}
 		}
 	}
+	start := time.Now()
 	queue.Push(&Step{x: startX, y: startY, cost: 1, direction: "S"})
 
 	var current *Step
 	maxCost := math.MaxInt
 	var paths []*Step
-
+	visited := make(map[string]*Step)
 	for len(queue.Elements) > 0 {
 		current = queue.Shift()
-
+		visited[key(current.x, current.y)] = current
 		// Stop if we've exceeded the maxCost
 		if current.cost > maxCost {
 			break
+		}
+
+		if current.parent != nil && current.direction != current.parent.direction {
+			np := &Step{direction: current.direction, x: current.parent.x, y: current.parent.y, cost: current.parent.cost + 1000, delta: current.parent.delta, parent: current.parent.parent}
+			current.parent = np
+			current.cost += 1000
 		}
 
 		// Check if we've reached the end
@@ -87,11 +95,6 @@ func main() {
 				// Calculate base cost for the next step
 				stepCost := current.cost + costs[current.direction][dir]
 
-				// Apply direction change penalty
-				if dir != current.direction {
-					stepCost += 1000
-				}
-
 				// Create the new step
 				step := &Step{
 					x:         d[0] + current.x,
@@ -100,14 +103,14 @@ func main() {
 					cost:      stepCost,
 					parent:    current,
 				}
+				if vStep, ok := visited[key(step.x, step.y)]; ok {
+					if (vStep.cost < step.cost && vStep.direction == step.direction) || (vStep.cost+1000 < step.cost && step.direction != vStep.direction) {
+						continue
+					}
+				}
 				step.delta = int(math.Abs(float64(step.x-endX))) + int(math.Abs(float64(step.y-endY)))
 
 				if step.cost <= maxCost {
-					if index := inQueue(step.x, step.y); index != -1 {
-						if queue.Elements[index].cost > step.cost {
-							queue.Elements = append(queue.Elements[:index], queue.Elements[index+1:]...)
-						}
-					}
 					queue.Push(step)
 				}
 			}
@@ -115,6 +118,7 @@ func main() {
 		queue.Sort()
 	}
 
+	fmt.Printf("Done doing pathing: %v\n", time.Since(start))
 	fmt.Printf("Part 1: %d\n", maxCost)
 
 	// Print all best paths
@@ -124,6 +128,7 @@ func main() {
 		current := path
 		for current != nil {
 			if _, ok := counted[key(current.x, current.y)]; !ok {
+				grid.SetSafeColumn("O", current.x, current.y)
 				counted[key(current.x, current.y)] = true
 				bestSeats++
 			}
@@ -131,6 +136,15 @@ func main() {
 		}
 	}
 	fmt.Printf("Part 2: %d\n", bestSeats)
+}
+
+func (g *Grid) print() {
+	for _, row := range g.Rows {
+		for _, c := range row {
+			fmt.Print(c)
+		}
+		fmt.Println()
+	}
 }
 
 func inQueue(x, y int) int {
