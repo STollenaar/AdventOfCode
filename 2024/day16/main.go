@@ -137,21 +137,3 @@ func main() {
 	}
 	fmt.Printf("Part 2: %d\n", bestSeats)
 }
-
-func (g *Grid) print() {
-	for _, row := range g.Rows {
-		for _, c := range row {
-			fmt.Print(c)
-		}
-		fmt.Println()
-	}
-}
-
-func inQueue(x, y int) int {
-	for i, q := range queue.Elements {
-		if q.x == x && q.y == y {
-			return i
-		}
-	}
-	return -1
-}

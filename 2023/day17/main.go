@@ -142,17 +142,8 @@ func sort(a, b int) bool {
 	return queue.Elements[a].totalH+queue.Elements[a].distance < queue.Elements[b].totalH+queue.Elements[b].distance
 }
 
-func contains(nodes ...*Node) bool {
-	for _, n := range nodes {
-		for _, q := range queue.Elements {
-			if q.x == n.x && q.y == n.y {
-				// if q.totalH >= n.totalH {
-				return true
-				// }
-			}
-		}
-	}
-	return false
+func contains(a, b *Node) bool {
+	return a.x == b.x && a.y == b.y
 }
 
 func printGrid() {

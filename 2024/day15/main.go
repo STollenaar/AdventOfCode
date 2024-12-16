@@ -154,7 +154,7 @@ func solvePart2() {
 	for _, move := range moves {
 		// fmt.Printf("Move: %d/%d\n", i, len(moves))
 		// Define direction deltas
-			var dx, dy int
+		var dx, dy int
 		switch move {
 		case "^":
 			dx, dy = 0, -1
@@ -253,13 +253,8 @@ func getFullBoxVertical(start *Point, dy int) []*Point {
 	visited := make(map[string]bool) // Track visited points using their "x,y" key
 	queue := &Queue{}
 
-	queue.EqualFunction = func(input ...*Point) bool {
-		for _, p := range queue.Elements {
-			if p == input[0] {
-				return true
-			}
-		}
-		return false
+	queue.EqualFunction = func(a, b *Point) bool {
+		return a == b
 	}
 	var result []*Point
 

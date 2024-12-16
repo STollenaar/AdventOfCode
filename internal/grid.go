@@ -1,5 +1,7 @@
 package internal
 
+import "fmt"
+
 type Row[T comparable] []T
 
 type Grid[T comparable] struct {
@@ -97,4 +99,13 @@ func (g *Grid[T]) GetHeight(x int) int {
 // Set the empty value
 func (g *Grid[T]) SetEmpty(in T) {
 	g.empty = in
+}
+
+func (g *Grid[T]) Print() {
+	for _, row := range g.Rows {
+		for _, c := range row {
+			fmt.Print(c)
+		}
+		fmt.Println()
+	}
 }

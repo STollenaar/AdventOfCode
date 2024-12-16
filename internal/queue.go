@@ -5,7 +5,7 @@ import "sort"
 type Queue[T comparable] struct {
 	Elements      []T
 	SortFunction  func(i, j int) bool
-	EqualFunction func(input ...T) bool
+	EqualFunction func(a, b T) bool
 }
 
 // Add element to the end of the queue
@@ -15,8 +15,12 @@ func (q *Queue[T]) Push(p ...T) {
 
 // Add element to the end of the queue if not there
 func (q *Queue[T]) PushUnique(p ...T) {
-	if !q.EqualFunction(p...) {
-		q.Elements = append(q.Elements, p...)
+	for _, t := range p {
+		for _, e := range q.Elements {
+			if !q.EqualFunction(e, t) {
+				q.Elements = append(q.Elements, p...)
+			}
+		}
 	}
 }
 
