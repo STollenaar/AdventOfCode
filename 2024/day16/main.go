@@ -40,6 +40,10 @@ func main() {
 		return queue.Elements[i].cost < queue.Elements[j].cost
 	}
 
+	key := func(x, y int) string {
+		return fmt.Sprintf("%d,%d", x, y)
+	}
+
 	for y, line := range lines {
 		for x, c := range line {
 			grid.AddSafeToColumn(string(c), y)
@@ -54,41 +58,55 @@ func main() {
 		}
 	}
 	queue.Push(&Step{x: startX, y: startY, cost: 1, direction: "S"})
-	visisted := make(map[string]*Step)
-
-	key := func(x, y int) string {
-		return fmt.Sprintf("%d,%d", x, y)
-	}
 
 	var current *Step
 	maxCost := math.MaxInt
 	var paths []*Step
+
 	for len(queue.Elements) > 0 {
 		current = queue.Shift()
-		visisted[key(current.x, current.y)] = current
+
+		// Stop if we've exceeded the maxCost
+		if current.cost > maxCost {
+			break
+		}
+
+		// Check if we've reached the end
 		if grid.GetSafeColumn(current.x, current.y) == "E" {
-			if maxCost <= math.MaxInt {
+			if current.cost < maxCost {
 				maxCost = current.cost
+				paths = []*Step{current} // Reset paths since we've found a better cost
+			} else if current.cost == maxCost {
+				paths = append(paths, current)
 			}
-			paths = append(paths, current)
 			continue
 		}
 
 		for dir, d := range directions {
 			if grid.GetSafeColumn(current.x+d[0], current.y+d[1]) != "#" {
-				step := &Step{x: d[0] + current.x, y: d[1] + current.y, direction: dir, cost: current.cost + costs[current.direction][dir], parent: current}
-				step.delta = int(math.Abs(float64(step.x-endX))) + int(math.Abs(float64(step.y-endY)))
-				if s, ok := visisted[key(step.x, step.y)]; ok && step.cost > s.cost {
-					continue
+				// Calculate base cost for the next step
+				stepCost := current.cost + costs[current.direction][dir]
+
+				// Apply direction change penalty
+				if dir != current.direction {
+					stepCost += 1000
 				}
+
+				// Create the new step
+				step := &Step{
+					x:         d[0] + current.x,
+					y:         d[1] + current.y,
+					direction: dir,
+					cost:      stepCost,
+					parent:    current,
+				}
+				step.delta = int(math.Abs(float64(step.x-endX))) + int(math.Abs(float64(step.y-endY)))
+
 				if step.cost <= maxCost {
 					if index := inQueue(step.x, step.y); index != -1 {
 						if queue.Elements[index].cost > step.cost {
 							queue.Elements = append(queue.Elements[:index], queue.Elements[index+1:]...)
 						}
-					}
-					if step.direction != current.direction {
-						step.cost += 1000
 					}
 					queue.Push(step)
 				}
@@ -97,28 +115,22 @@ func main() {
 		queue.Sort()
 	}
 
-	fmt.Printf("Part 1: %d\n", paths[0].cost)
+	fmt.Printf("Part 1: %d\n", maxCost)
 
+	// Print all best paths
 	var bestSeats int
+	counted := make(map[string]bool)
 	for _, path := range paths {
 		current := path
 		for current != nil {
-			grid.SetSafeColumn("O", current.x, current.y)
+			if _, ok := counted[key(current.x, current.y)]; !ok {
+				counted[key(current.x, current.y)] = true
+				bestSeats++
+			}
 			current = current.parent
-			bestSeats++
 		}
 	}
 	fmt.Printf("Part 2: %d\n", bestSeats)
-	grid.print()
-}
-
-func (g *Grid) print() {
-	for _, row := range g.Rows {
-		for _, c := range row {
-			fmt.Print(c)
-		}
-		fmt.Println()
-	}
 }
 
 func inQueue(x, y int) int {
