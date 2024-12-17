@@ -2,118 +2,88 @@ package main
 
 import (
 	"fmt"
-	"math"
+	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/STollenaar/AdventOfCode/internal"
 )
 
-var (
-	registry, program []int
-	instruction       int
-	outputs           []string
-
-	operation = map[int]func(c int){0: adv, 1: bxl, 2: bst, 3: jnz, 4: bxc, 5: out, 6: bdv, 7: cdv}
-)
-
 func main() {
 	lines := internal.Reader()
 
-	load(lines)
-	inputProgram, inputRegistyA := strings.Split(lines[4], ": ")[1], registry[0]
-	for ; instruction < len(program); instruction += 2 {
-		operation[program[instruction]](program[instruction+1])
-	}
+	program, registerA := load(lines)
 
-	fmt.Printf("Part 1: %s\n", strings.Join(outputs, ","))
+	fmt.Printf("Part 1: %d\n", runProgram(program, registerA))
+	out := part2(program)
+	fmt.Printf("Part 2: %d, %d\n", out, runProgram(program, out))
+}
 
-	i := 1
-	for {
-		if i == inputRegistyA {
-			i++
-			continue
+func part2(program []uint64) (registerA uint64) {
+	for itr := len(program)-1; itr >= 0; itr-- {
+		registerA <<= 3
+		for !slices.Equal(runProgram(program, registerA), program[itr:]) {
+			registerA++
 		}
-		load(lines)
-		registry[0] = i
-		for ; instruction < len(program); instruction += 2 {
-			operation[program[instruction]](program[instruction+1])
+	}
+	return
+}
+
+func runProgram(program []uint64, registerA uint64) (out []uint64) {
+	var instruction int
+	registry := []uint64{registerA, 0, 0}
+
+	getoperand := func(operand uint64) uint64 {
+		switch operand {
+		case 4:
+			return registry[0]
+		case 5:
+			return registry[1]
+		case 6:
+			return registry[2]
+		default:
+			return operand
 		}
-		if strings.Join(outputs, ",") == inputProgram {
-			fmt.Printf("Part 2: %d\n", i)
-			break
+	}
+
+	for instruction < len(program)-1 {
+		operator, operand := program[instruction], program[instruction+1]
+
+		switch operator {
+		case 0:
+			registry[0] >>= getoperand(operand)
+		case 1:
+			registry[1] ^= operand
+		case 2:
+			registry[1] = getoperand(operand) & 7
+		case 3:
+			if registry[0] != 0 {
+				instruction = int(operand)
+				continue
+			}
+		case 4:
+			registry[1] ^= registry[2]
+		case 5:
+			out = append(out, getoperand(operand)&7)
+		case 6:
+			registry[1] = registry[0] >> getoperand(operand)
+		case 7:
+			registry[2] = registry[0] >> getoperand(operand)
+
 		}
-		i++
+		instruction += 2
 	}
+	return
 }
 
-func adv(combo int) {
-	denum := int(math.Pow(2, float64(getCombo(combo))))
-	registry[0] = registry[0] / denum
-}
-
-func bxl(combo int) {
-	registry[1] = registry[1] ^ combo
-}
-
-func bst(combo int) {
-	registry[1] = getCombo(combo) % 8
-}
-
-func jnz(combo int) {
-	if registry[0] == 0 {
-		return
-	}
-	instruction = combo
-	instruction -= 2
-}
-
-func bxc(combo int) {
-	registry[1] = registry[1] ^ registry[2]
-}
-
-func out(combo int) {
-	outputs = append(outputs, strconv.Itoa(getCombo(combo)%8))
-}
-
-func bdv(combo int) {
-	denum := int(math.Pow(2, float64(getCombo(combo))))
-	registry[1] = registry[0] / denum
-}
-
-func cdv(combo int) {
-	denum := int(math.Pow(2, float64(getCombo(combo))))
-	registry[2] = registry[0] / denum
-}
-
-func getCombo(combo int) int {
-	switch combo {
-	case 4:
-		return registry[0]
-	case 5:
-		return registry[1]
-	case 6:
-		return registry[2]
-	default:
-		return combo
-	}
-}
-
-func load(lines []string) {
+func load(lines []string) (program []uint64, registerA uint64) {
 	aS := strings.Split(lines[0], ": ")[1]
-	a, _ := strconv.Atoi(aS)
-	bS := strings.Split(lines[1], ": ")[1]
-	b, _ := strconv.Atoi(bS)
-	cS := strings.Split(lines[2], ": ")[1]
-	c, _ := strconv.Atoi(cS)
-	registry = []int{a, b, c}
+	registerA, _ = strconv.ParseUint(aS, 10, 64)
 
 	pS := strings.Split(strings.Split(lines[4], ": ")[1], ",")
-	program = []int{}
-	outputs = []string{}
-	instruction = 0
 	for _, pp := range pS {
-		p, _ := strconv.Atoi(pp)
+		p, _ := strconv.ParseUint(pp, 10, 64)
 		program = append(program, p)
 	}
+	return
 }
