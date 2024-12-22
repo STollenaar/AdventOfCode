@@ -19,6 +19,7 @@ func main() {
 		initial := secret
 		secretOne := ones(secret)
 		seqOnes[initial] = append(seqOnes[initial], secretOne)
+		seq[initial] = append(seq[initial], 0)
 		for i := 0; i < 2000; i++ {
 			secret = sequence(secret)
 			nextOne := ones(secret)
@@ -29,9 +30,9 @@ func main() {
 		}
 		total += secret
 	}
-	fmt.Println(total)
-	fmt.Println(seq)
-	fmt.Println(findMaxSeq(seq[123]))
+	fmt.Printf("Part 1: %d\n", total)
+	maxSeq := findMaxSeq(seqOnes, seq)
+	fmt.Printf("Part 2: %d\n", addAll(maxSeq))
 }
 
 func sequence(secret int) int {
@@ -55,40 +56,45 @@ func ones(nmbr int) int {
 	return n
 }
 
-func findMaxSeq(delta []int) []int {
-	seq := make([]int, 4)
-	occ := make(map[string]int)
+func findMaxSeq(seqOnes map[int][]int, seqDeltas map[int][]int) []int {
+	occ := make(map[string][]int)
 
-	for d := 3; d < len(delta); d++ {
-		seq[0] = delta[d-3]
-		seq[1] = delta[d-2]
-		seq[2] = delta[d-1]
-		seq[3] = delta[d]
+	for nmbr, ones := range seqOnes {
+		delta := seqDeltas[nmbr]
+		seq := make([]int, 4)
+		occTemp := make(map[string][]int)
+		for d := 3; d < len(delta); d++ {
+			seq[0] = delta[d-3]
+			seq[1] = delta[d-2]
+			seq[2] = delta[d-1]
+			seq[3] = delta[d]
 
-		occ[sliceToString(seq)]++
-	}
-
-	var max int
-	var maxKey string
-	fmt.Println(occ["-2,1,-1,3"])
-	for k, v := range occ {
-		if max < v {
-			maxKey = k
-			max = v
+			occTemp[sliceToString(seq)] = append(occTemp[sliceToString(seq)], ones[d])
+		}
+		for k, v := range occTemp {
+			occ[k] = append(occ[k], v[0])
 		}
 	}
-	return stringToSlice(maxKey)
+	var max int
+	var maxSeq string
+
+	for k, v := range occ {
+		count := addAll(v)
+		if max < count {
+			max = count
+			maxSeq = k
+		}
+	}
+	return occ[maxSeq]
 }
 
 func sliceToString(a []int) string {
 	return strings.Trim(strings.Replace(fmt.Sprint(a), " ", ",", -1), "[]")
 }
 
-func stringToSlice(in string) (out []int) {
-	a := strings.Split(in, ",")
-	for _, i := range a {
-		t, _ := strconv.Atoi(i)
-		out = append(out, t)
+func addAll(a []int) (out int) {
+	for _, t := range a {
+		out += t
 	}
 	return
 }
