@@ -47,6 +47,15 @@ func (q *Queue[T]) Find(p T) interface{} {
 	return nil
 }
 
+func (q *Queue[T]) FindIndex(p T) int {
+	for i, iQ := range q.Elements {
+		if q.EqualFunction(iQ, p) {
+			return i
+		}
+	}
+	return -1
+}
+
 // Get element from the start of the queue
 func (q *Queue[T]) Shift() T {
 	e := q.Elements[0]
