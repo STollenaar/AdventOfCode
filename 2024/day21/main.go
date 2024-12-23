@@ -58,7 +58,7 @@ func main() {
 	for _, line := range lines {
 		steps := findSteps(line)
 		nmbr, _ := strconv.Atoi(strings.ReplaceAll(line, "A", ""))
-		fmt.Println(nmbr, len(steps))
+		fmt.Println(nmbr, len(steps), steps)
 	}
 }
 
@@ -88,6 +88,9 @@ func findMoves(start, end string, layer int) []string {
 	}
 	var queue Queue
 	queue.SortFunction = func(i, j int) bool {
+		if queue.Elements[i].cost == queue.Elements[j].cost {
+			return queue.Elements[i].symbol < queue.Elements[j].symbol
+		}
 		return queue.Elements[i].cost < queue.Elements[j].cost
 	}
 
@@ -97,7 +100,7 @@ func findMoves(start, end string, layer int) []string {
 	var paths []*Point
 
 	key := func(p *Point) string {
-		return fmt.Sprintf("%d,%d", p.x, p.y)
+		return fmt.Sprintf("%d,%d,%s", p.x, p.y, p.symbol)
 	}
 
 	visited := make(map[string]int)
@@ -140,12 +143,12 @@ func findMoves(start, end string, layer int) []string {
 		}
 	}
 
-	for smallest != nil {
+	for smallest != nil && smallest.dir != "" {
 		out = append(out, smallest.dir)
 		smallest = smallest.parent
 	}
 	slices.Reverse(out)
 	out = append(out, "A")
-	fmt.Println(len(out))
+	fmt.Println("Debug: Final path:", strings.Join(out, ""))
 	return out
 }
