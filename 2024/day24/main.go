@@ -3,12 +3,14 @@ package main
 import (
 	"fmt"
 	"maps"
+	"os"
 	"reflect"
 	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/STollenaar/AdventOfCode/internal"
+	"github.com/emicklei/dot"
 )
 
 type Gate struct {
@@ -18,10 +20,13 @@ type Gate struct {
 var (
 	cables = make(map[string]bool)
 	gates  []Gate
+
+	graph   = make(map[string]dot.Node)
 )
 
 func main() {
 	lines := internal.Reader()
+	g := dot.NewGraph(dot.Directed)
 
 	cableInit := true
 	for _, line := range lines {
@@ -32,6 +37,7 @@ func main() {
 		if cableInit {
 			l := strings.Split(line, ": ")
 			cables[l[0]] = l[1] == "1"
+			graph[l[0]] = g.Node(l[0]).Box()
 		} else {
 			l := strings.Split(line, " ")
 			gate := Gate{
@@ -41,7 +47,17 @@ func main() {
 				kind: l[1],
 			}
 			gates = append(gates, gate)
+			n :=g.Node(fmt.Sprintf("%s -> %s",gate.kind,gate.out))
+			graph[gate.out] = n
 		}
+	}
+	for _, gate := range gates {
+		g.Edge(graph[gate.a], graph[gate.out])
+		g.Edge(graph[gate.b], graph[gate.out])
+	}
+	err := os.WriteFile("graph.dot", []byte(g.String()), 0644)
+	if err != nil {
+		panic(err)
 	}
 	for {
 		before := make(map[string]bool)
@@ -72,6 +88,7 @@ func main() {
 	}
 	i, _ := strconv.ParseInt(binaryString, 2, 64)
 	fmt.Printf("Part1: %d\n", i)
+
 }
 
 func (g *Gate) DoGate() {
