@@ -21,10 +21,43 @@ type Point struct {
 
 var (
 	directions = map[string][]int{
-		"<": {-1, 0},
-		">": {1, 0},
 		"^": {0, -1},
+		">": {1, 0},
 		"v": {0, 1},
+		"<": {-1, 0},
+	}
+
+	costMap = map[string]map[string]int{
+		"^": {
+			">": 2,
+			"v": 1,
+			"<": 2,
+			"A": 1,
+		},
+		">": {
+			"^": 2,
+			"v": 1,
+			"<": 2,
+			"A": 1,
+		},
+		"v": {
+			">": 1,
+			"^": 1,
+			"<": 1,
+			"A": 2,
+		},
+		"<": {
+			">": 2,
+			"v": 1,
+			"^": 2,
+			"A": 3,
+		},
+		"A": {
+			">": 1,
+			"v": 2,
+			"<": 3,
+			"^": 1,
+		},
 	}
 
 	keypad = map[string][]int{
@@ -55,11 +88,14 @@ var (
 func main() {
 	lines := internal.Reader()
 
+    var part1Total int
 	for _, line := range lines {
 		steps := findSteps(line)
 		nmbr, _ := strconv.Atoi(strings.ReplaceAll(line, "A", ""))
+        part1Total += nmbr*len(steps)
 		fmt.Println(nmbr, len(steps), steps)
 	}
+    fmt.Printf("Part1: %d\n", part1Total)
 }
 
 func findSteps(code string) string {
@@ -73,7 +109,8 @@ func findSteps(code string) string {
 			steps = append(steps, findMoves(start, string(c), i)...)
 			start = string(c)
 		}
-		layerSteps = append(layerSteps, strings.Join(steps, ""))
+		layerStep := strings.Join(steps, "")
+		layerSteps = append(layerSteps, layerStep)
 	}
 
 	return layerSteps[len(layerSteps)-1]
@@ -107,6 +144,11 @@ func findMoves(start, end string, layer int) []string {
 
 	for len(queue.Elements) > 0 {
 		current = queue.Shift()
+
+		if c, ok := visited[key(current)]; ok && c < current.cost {
+			continue
+		}
+
 		visited[key(current)] = current.cost
 		currentPos := grid[current.symbol]
 		if current.symbol == end {
@@ -125,7 +167,7 @@ func findMoves(start, end string, layer int) []string {
 
 			for s, p := range grid {
 				if p[0] == nextPos[0] && p[1] == nextPos[1] {
-					nextPoint := &Point{parent: current, symbol: s, dir: dir, cost: current.cost + 1, x: nextPos[0], y: nextPos[1]}
+					nextPoint := &Point{parent: current, symbol: s, dir: dir, cost: current.cost + costMap[current.dir][dir], x: nextPos[0], y: nextPos[1]}
 					if c, ok := visited[key(nextPoint)]; ok && c < nextPoint.cost {
 						continue
 					}
@@ -149,6 +191,5 @@ func findMoves(start, end string, layer int) []string {
 	}
 	slices.Reverse(out)
 	out = append(out, "A")
-	fmt.Println("Debug: Final path:", strings.Join(out, ""))
 	return out
 }
