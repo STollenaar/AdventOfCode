@@ -20,7 +20,8 @@ type Point struct {
 }
 
 var (
-	pathCache = make(map[string]*Point)
+	pathCache    = make(map[string]*Point)
+	segmentCache = make(map[string]string)
 
 	directions = map[string][]int{
 		"^": {0, -1},
@@ -96,12 +97,16 @@ func main() {
 		nmbr, _ := strconv.Atoi(strings.ReplaceAll(line, "A", ""))
 		part1Total += nmbr * len(steps)
 		fmt.Println(nmbr, len(steps), steps)
-		steps = findSteps(line, 25)
-		nmbr, _ = strconv.Atoi(strings.ReplaceAll(line, "A", ""))
-		part2Total += nmbr * len(steps)
-		fmt.Println(nmbr, len(steps), steps)
 	}
 	fmt.Printf("Part1: %d\n", part1Total)
+	// continue for infinite runtime
+	for _, line := range lines {
+		steps := findSteps(line, 25)
+		nmbr, _ := strconv.Atoi(strings.ReplaceAll(line, "A", ""))
+		part2Total += nmbr * len(steps)
+		fmt.Println(nmbr, len(steps))
+	}
+	fmt.Printf("Part2: %d\n", part2Total)
 }
 
 func findSteps(code string, maxLayer int) string {
@@ -112,7 +117,8 @@ func findSteps(code string, maxLayer int) string {
 		var steps []string
 		for _, c := range layer {
 			moves := findMoves(start, string(c), i, maxLayer)
-			steps = append(steps, reconstructPath(moves)...)
+			path := reconstructPath(moves)
+			steps = append(steps, path...)
 			start = string(c)
 		}
 		layerStep := strings.Join(steps, "")
@@ -124,7 +130,7 @@ func findSteps(code string, maxLayer int) string {
 
 // Find the smallest path for each layer recursively
 func findMoves(start, end string, layer, maxLayer int) *Point {
-    cacheKey := fmt.Sprintf("%s-%s-%d", start, end, layer)
+	cacheKey := fmt.Sprintf("%s-%s", start, end)
 	if cached, ok := pathCache[cacheKey]; ok {
 		return cached
 	}
@@ -149,7 +155,7 @@ func findMoves(start, end string, layer, maxLayer int) *Point {
 	var paths []*Point
 	visited := make(map[string]int)
 	key := func(p *Point) string {
-		return fmt.Sprintf("%d,%d,%s,%d", p.x, p.y, p.symbol, layer)
+		return fmt.Sprintf("%d,%d,%s", p.x, p.y, p.symbol)
 	}
 
 	for len(queue.Elements) > 0 {
