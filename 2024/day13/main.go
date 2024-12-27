@@ -9,12 +9,8 @@ import (
 	"github.com/STollenaar/AdventOfCode/internal"
 )
 
-type Point struct {
-	x, y float64
-}
-
 type Machine struct {
-	buttonA, buttonB, prize Point
+	buttonA, buttonB, prize internal.Point[float64]
 }
 
 const (
@@ -39,17 +35,17 @@ func main() {
 		prizeY, _ := strconv.ParseFloat(strings.Split(strings.Split(prize[2], "=")[1], ",")[0], 64)
 
 		machines = append(machines, Machine{
-			buttonA: Point{
-				x: aX,
-				y: aY,
+			buttonA: internal.Point[float64]{
+				X: aX,
+				Y: aY,
 			},
-			buttonB: Point{
-				x: bX,
-				y: bY,
+			buttonB: internal.Point[float64]{
+				X: bX,
+				Y: bY,
 			},
-			prize: Point{
-				x: prizeX,
-				y: prizeY,
+			prize: internal.Point[float64]{
+				X: prizeX,
+				Y: prizeY,
 			},
 		})
 	}
@@ -64,8 +60,8 @@ func main() {
 	fmt.Printf("Part 1: %d\n", totalPart1)
 
 	for _, machine := range machines {
-		machine.prize.x += 10000000000000
-		machine.prize.y += 10000000000000
+		machine.prize.X += 10000000000000
+		machine.prize.Y += 10000000000000
 		a, b := solve(machine)
 		if isInteger(a) && isInteger(b) {
 			totalPart2 += (int(a)*3 + int(b))
@@ -81,7 +77,7 @@ func isInteger(value float64) bool {
 
 // I am bad at Math. Thanks internet strangers for equation, failed my linear algebra courses a couple of times
 func solve(machine Machine) (a, b float64) {
-	a = ((machine.prize.x * machine.buttonB.y) - (machine.prize.y * machine.buttonB.x)) / ((machine.buttonA.x * machine.buttonB.y) - (machine.buttonA.y * machine.buttonB.x))
-	b = ((machine.buttonA.x * machine.prize.y) - (machine.buttonA.y * machine.prize.x)) / ((machine.buttonA.x * machine.buttonB.y) - (machine.buttonA.y * machine.buttonB.x))
+	a = ((machine.prize.X * machine.buttonB.Y) - (machine.prize.Y * machine.buttonB.X)) / ((machine.buttonA.X * machine.buttonB.Y) - (machine.buttonA.Y * machine.buttonB.X))
+	b = ((machine.buttonA.X * machine.prize.Y) - (machine.buttonA.Y * machine.prize.X)) / ((machine.buttonA.X * machine.buttonB.Y) - (machine.buttonA.Y * machine.buttonB.X))
 	return
 }

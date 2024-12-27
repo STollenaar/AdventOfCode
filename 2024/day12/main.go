@@ -6,10 +6,6 @@ import (
 	"github.com/STollenaar/AdventOfCode/internal"
 )
 
-type Grid struct {
-	internal.Grid[*Node]
-}
-
 type Node struct {
 	plant   string
 	visited bool
@@ -21,12 +17,8 @@ type Plot struct {
 	places []*Node
 }
 
-type Queue struct {
-	internal.Queue[*Node]
-}
-
 var (
-	grid  Grid
+	grid  internal.Grid[*Node]
 	plots []*Plot
 )
 
@@ -46,7 +38,7 @@ func main() {
 				continue
 			}
 			node.visited = true
-			queue := &Queue{}
+			queue := &internal.Queue[*Node]{}
 			queue.Enqueue(node)
 			plot := &Plot{
 				plant: node.plant,

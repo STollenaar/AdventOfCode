@@ -1,6 +1,9 @@
 package internal
 
-import "fmt"
+import (
+	"fmt"
+	"slices"
+)
 
 type Row[T comparable] []T
 
@@ -107,5 +110,143 @@ func (g *Grid[T]) Print() {
 			fmt.Print(c)
 		}
 		fmt.Println()
+	}
+}
+
+func (g *Grid[T]) Copy() *Grid[T] {
+	var duplicate Grid[T]
+
+	for i := range g.Rows {
+		row := make([]T, len(g.Rows[i]))
+		copy(row, g.Rows[i])
+		duplicate.AddRow(row)
+	}
+	return &duplicate
+}
+
+func (g *Grid[T]) Rotate90() *Grid[T] {
+	rotated := Grid[T]{empty: g.empty}
+	for x := 0; x < len(g.Rows[0]); x++ {
+		newRow := Row[T]{}
+		for y := len(g.Rows) - 1; y >= 0; y-- {
+			newRow = append(newRow, g.GetSafeColumn(x, y))
+		}
+		rotated.AddRow(newRow)
+	}
+	return &rotated
+}
+
+func (g *Grid[T]) FlipHorizontal() *Grid[T] {
+	flipped := g.Copy()
+	for y := range flipped.Rows {
+		slices.Reverse(flipped.Rows[y])
+	}
+	return flipped
+}
+
+func (g *Grid[T]) FlipVertical() *Grid[T] {
+	flipped := Grid[T]{empty: g.empty}
+	for y := len(g.Rows) - 1; y >= 0; y-- {
+		flipped.AddRow(g.Rows[y])
+	}
+	return &flipped
+}
+
+func (g *Grid[T]) FloodFill(x, y int, target, replacement T) {
+	if g.GetSafeColumn(x, y) != target || target == replacement {
+		return
+	}
+	var stack []Point[int]
+	stack = append(stack, Point[int]{X: x, Y: y})
+
+	for len(stack) > 0 {
+		p := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+
+		if g.GetSafeColumn(p.X, p.Y) == target {
+			g.SetSafeColumn(replacement, p.X, p.Y)
+
+			for _, d := range [][]int{{1, 0}, {0, 1}, {-1, 0}, {0, -1}} {
+				nx, ny := p.X+d[0], p.Y+d[1]
+				if nx >= 0 && ny >= 0 {
+					stack = append(stack, Point[int]{X: nx, Y: ny})
+				}
+			}
+		}
+	}
+}
+
+func (g *Grid[T]) BFS(startX, startY, endX, endY int, walkable T) int {
+	type Node struct {
+		x, y, dist int
+	}
+
+	queue := []Node{{x: startX, y: startY, dist: 0}}
+	visited := make(map[string]bool)
+	key := func(x, y int) string { return fmt.Sprintf("%d,%d", x, y) }
+
+	for len(queue) > 0 {
+		node := queue[0]
+		queue = queue[1:]
+
+		if node.x == endX && node.y == endY {
+			return node.dist
+		}
+
+		if visited[key(node.x, node.y)] {
+			continue
+		}
+		visited[key(node.x, node.y)] = true
+
+		for _, d := range [][]int{{1, 0}, {0, 1}, {-1, 0}, {0, -1}} {
+			nx, ny := node.x+d[0], node.y+d[1]
+			if nx >= 0 && ny >= 0 && g.GetSafeColumn(nx, ny) == walkable {
+				queue = append(queue, Node{x: nx, y: ny, dist: node.dist + 1})
+			}
+		}
+	}
+	return -1
+}
+
+func (g *Grid[T]) DrawLine(x1, y1, x2, y2 int, symbol T) {
+	dx := abs(x2 - x1)
+	dy := abs(y2 - y1)
+	sx := -1
+	if x1 < x2 {
+		sx = 1
+	}
+	sy := -1
+	if y1 < y2 {
+		sy = 1
+	}
+	err := dx - dy
+
+	for {
+		g.SetSafeColumn(symbol, x1, y1)
+		if x1 == x2 && y1 == y2 {
+			break
+		}
+		e2 := 2 * err
+		if e2 > -dy {
+			err -= dy
+			x1 += sx
+		}
+		if e2 < dx {
+			err += dx
+			y1 += sy
+		}
+	}
+}
+func (g *Grid[T]) ShiftRowsDown() {
+	last := g.Rows[len(g.Rows)-1]
+	copy(g.Rows[1:], g.Rows[:len(g.Rows)-1])
+	g.Rows[0] = last
+}
+
+func (g *Grid[T]) ShiftColumnsRight() {
+	for y := range g.Rows {
+		last := g.Rows[y][len(g.Rows[y])-1]
+		copy(g.Rows[y][1:], g.Rows[y][:len(g.Rows[y])-1])
+		g.Rows[y][0] = last
 	}
 }

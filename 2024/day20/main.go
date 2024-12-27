@@ -8,21 +8,13 @@ import (
 	"github.com/STollenaar/AdventOfCode/internal"
 )
 
-type Grid struct {
-	internal.Grid[string]
-}
-
 type Point struct {
 	symbol     string
 	x, y, cost int
 }
 
-type Queue struct {
-	internal.Queue[*Point]
-}
-
 var (
-	grid  Grid
+	grid  internal.Grid[string]
 	walls []Point
 )
 
@@ -51,7 +43,7 @@ func main() {
 }
 
 func solve(start *Point, visited map[string]*Point, maxCost, maxCheat int) (steps, results int) {
-	queue := &Queue{}
+	queue := &internal.Queue[*Point]{}
 	queue.EqualFunction = func(a, b *Point) bool {
 		return a.x == b.x && a.y == b.y
 	}
@@ -113,14 +105,4 @@ func solve(start *Point, visited map[string]*Point, maxCost, maxCheat int) (step
 	steps = current.cost
 	wg.Wait()
 	return
-}
-func (g *Grid) Copy() Grid {
-
-	var duplicate Grid
-	for i := range g.Rows {
-		row := make([]string, len(g.Rows[i]))
-		copy(row, g.Rows[i])
-		duplicate.AddRow(row)
-	}
-	return duplicate
 }

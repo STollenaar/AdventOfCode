@@ -7,19 +7,15 @@ import (
 	"github.com/STollenaar/AdventOfCode/internal"
 )
 
-type Grid struct {
-	internal.Grid[string]
-}
-
 type Node struct {
 	parent *Node
 	x, y   int
 }
 
 var (
-	grid, blownGrid = new(Grid), new(Grid)
+	grid, blownGrid = new(internal.Grid[string]), new(internal.Grid[string])
 	nodes           []*Node
-	subtract        *Grid
+	subtract        *internal.Grid[string]
 )
 
 func init() {
@@ -243,14 +239,4 @@ func visitedNodes(nX, nY int) *Node {
 		}
 	}
 	return nil
-}
-
-func (g *Grid) Copy() *Grid {
-	copy := new(Grid)
-	for y, r := range g.Rows {
-		for x, c := range r {
-			copy.SetSafeColumn(c, x, y)
-		}
-	}
-	return copy
 }

@@ -8,23 +8,10 @@ import (
 	"github.com/STollenaar/AdventOfCode/internal"
 )
 
-type Grid struct {
-	internal.Grid[string]
-}
-
-type Point struct {
-	parent            *Point
-	x, y, delta, cost int
-}
-
-type Queue struct {
-	internal.Queue[*Point]
-}
-
 var (
-	grid Grid
+	grid internal.Grid[string]
 
-	fallingBytes []Point
+	fallingBytes []internal.Point[int]
 
 	endX, endY, fallAmount = 70, 70, 1024
 )
@@ -42,60 +29,60 @@ func main() {
 		xs, ys := strings.Split(line, ",")[0], strings.Split(line, ",")[1]
 		x, _ := strconv.Atoi(xs)
 		y, _ := strconv.Atoi(ys)
-		fallingBytes = append(fallingBytes, Point{x: x, y: y})
+		fallingBytes = append(fallingBytes, internal.Point[int]{X: x, Y: y})
 	}
 	for i, b := range fallingBytes {
 		if i == fallAmount {
 			break
 		}
-		grid.SetSafeColumn("#", b.x, b.y)
+		grid.SetSafeColumn("#", b.X, b.Y)
 	}
 
 	fmt.Printf("Part 1: %d\n", solve())
 
 	for _, fb := range fallingBytes {
-		grid.SetSafeColumn("#", fb.x, fb.y)
+		grid.SetSafeColumn("#", fb.X, fb.Y)
 		if solve() == -1 {
-			fmt.Printf("Part 2: %d,%d\n", fb.x, fb.y)
-            break
+			fmt.Printf("Part 2: %d,%d\n", fb.X, fb.Y)
+			break
 		}
 	}
 }
 
 func solve() int {
-	visited := make(map[string]*Point)
-	queue := &Queue{}
-	queue.EqualFunction = func(a, b *Point) bool {
-		return a.x == b.x && a.y == b.y
+	visited := make(map[string]*internal.Point[int])
+	queue := &	internal.Queue[*internal.Point[int]]{}
+	queue.EqualFunction = func(a, b *internal.Point[int]) bool {
+		return a.X == b.X && a.Y == b.Y
 	}
 	queue.SortFunction = func(i, j int) bool {
-		return queue.Elements[i].cost < queue.Elements[j].cost
+		return queue.Elements[i].Cost < queue.Elements[j].Cost
 	}
 
 	moves := [][]int{{1, 0}, {0, 1}, {-1, 0}, {0, -1}}
 	// Helper function to generate a unique key for a point
-	key := func(p *Point) string {
-		return fmt.Sprintf("%d,%d", p.x, p.y)
+	key := func(p *internal.Point[int]) string {
+		return fmt.Sprintf("%d,%d", p.X, p.Y)
 	}
 
-	queue.Push(&Point{x: 0, y: 0})
-	var current *Point
+	queue.Push(&internal.Point[int]{X: 0, Y: 0})
+	var current *internal.Point[int]
 	for len(queue.Elements) > 0 {
 		current = queue.Shift()
 		visited[key(current)] = current
 
-		if current.x == endX && current.y == endY {
+		if current.X == endX && current.Y == endY {
 			break
 		}
 
 		for _, m := range moves {
-			next := &Point{x: current.x + m[0], y: current.y + m[1], parent: current}
-			// next.delta = int(math.Abs(float64(endX-next.x)) + math.Abs(float64(endY-next.y)))
-			next.cost = current.cost + 1
-			if next.x >= 0 && next.x <= endX && next.y >= 0 && next.y <= endY && grid.GetSafeColumn(next.x, next.y) == "." {
-				if v, ok := visited[key(next)]; !ok || (ok && v.cost > next.cost) {
+			next := &internal.Point[int]{X: current.X + m[0], Y: current.Y + m[1], Parent: current}
+			// next.delta = int(math.Abs(float64(endX-next.X)) + math.Abs(float64(endY-next.Y)))
+			next.Cost = current.Cost + 1
+			if next.X >= 0 && next.X <= endX && next.Y >= 0 && next.Y <= endY && grid.GetSafeColumn(next.X, next.Y) == "." {
+				if v, ok := visited[key(next)]; !ok || (ok && v.Cost > next.Cost) {
 					if i := queue.FindIndex(next); i != -1 {
-						if queue.Elements[i].cost < next.cost {
+						if queue.Elements[i].Cost < next.Cost {
 							continue
 						}
 						queue.Elements = append(queue.Elements[:i], queue.Elements[i+1:]...)
@@ -106,15 +93,15 @@ func solve() int {
 		}
 		queue.Sort()
 	}
-	if current.x != endX || current.y != endY {
+	if current.X != endX || current.Y != endY {
 		return -1
 	}
 	var steps int
 	// grid.Print()
 	for current != nil {
-		// grid.SetSafeColumn("O", current.x, current.y)
+		// grid.SetSafeColumn("O", current.X, current.Y)
 		steps++
-		current = current.parent
+		current = current.Parent
 	}
 	steps--
 	// grid.Print()

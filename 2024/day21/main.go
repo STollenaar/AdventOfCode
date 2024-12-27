@@ -9,10 +9,6 @@ import (
 	"github.com/STollenaar/AdventOfCode/internal"
 )
 
-type Queue struct {
-	internal.Queue[*Point]
-}
-
 type Point struct {
 	parent      *Point
 	cost, x, y  int
@@ -142,7 +138,8 @@ func findMoves(start, end string, layer, maxLayer int) *Point {
 		grid = robot
 	}
 
-	var queue Queue
+	var queue internal.Queue[*Point]
+
 	queue.SortFunction = func(i, j int) bool {
 		if queue.Elements[i].cost == queue.Elements[j].cost {
 			return queue.Elements[i].symbol < queue.Elements[j].symbol

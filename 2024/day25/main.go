@@ -7,21 +7,17 @@ import (
 	"github.com/STollenaar/AdventOfCode/internal"
 )
 
-type Grid struct {
-	internal.Grid[string]
-}
-
 func main() {
 	lines := internal.Reader()
 
-	var current Grid
+	var current internal.Grid[string]
 
-	var all []Grid
+	var all []internal.Grid[string]
 	var keys, locks [][]int
 	for _, line := range lines {
 		if line == "" {
 			all = append(all, current)
-			current = Grid{}
+			current = internal.Grid[string]{}
 		} else {
 			current.AddRow(strings.Split(line, ""))
 		}
@@ -54,7 +50,7 @@ func main() {
 	keysLoop:
 		for _, key := range keys {
 			for i := 0; i < 5; i++ {
-				if lock[i] + key[i] >= 6 {
+				if lock[i]+key[i] >= 6 {
 					continue keysLoop
 				}
 			}

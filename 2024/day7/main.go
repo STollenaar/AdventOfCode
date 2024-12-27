@@ -8,12 +8,8 @@ import (
 	"github.com/STollenaar/AdventOfCode/internal"
 )
 
-type Queue struct {
-	internal.Queue[int]
-}
-
 var (
-	eqs = make(map[int]*Queue)
+	eqs = make(map[int]*internal.Queue[int])
 )
 
 func main() {
@@ -23,7 +19,7 @@ func main() {
 	for _, line := range lines {
 		l := strings.Split(line, ": ")
 		total, _ := strconv.Atoi(l[0])
-		eqs[total] = &Queue{}
+		eqs[total] = &internal.Queue[int]{}
 		ll := strings.Split(l[1], " ")
 		for _, nm := range ll {
 			nmbrs, _ := strconv.Atoi(nm)
@@ -46,7 +42,7 @@ func main() {
 	fmt.Printf("Part 2: %d\n", totalP2)
 }
 
-func checkP1(total, acc int, nmbrs *Queue) bool {
+func checkP1(total, acc int, nmbrs *internal.Queue[int]) bool {
 	if len(nmbrs.Elements) == 0 {
 		return total == acc
 	}
@@ -64,7 +60,7 @@ func checkP1(total, acc int, nmbrs *Queue) bool {
 	return mult || add
 }
 
-func checkP2(total, acc int, nmbrs *Queue) bool {
+func checkP2(total, acc int, nmbrs *internal.Queue[int]) bool {
 	if len(nmbrs.Elements) == 0 {
 		return total == acc
 	}
