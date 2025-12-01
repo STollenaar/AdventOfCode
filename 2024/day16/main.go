@@ -8,13 +8,6 @@ import (
 	"github.com/STollenaar/AdventOfCode/internal"
 )
 
-type Grid struct {
-	internal.Grid[string]
-}
-type Queue struct {
-	internal.Queue[*Step]
-}
-
 type Step struct {
 	parent            *Step
 	x, y, delta, cost int
@@ -22,8 +15,8 @@ type Step struct {
 }
 
 var (
-	grid  Grid
-	queue = &Queue{}
+	grid  internal.Grid[string]
+	queue = &internal.Queue[*Step]{}
 
 	directions = map[string][]int{"<": {-1, 0}, "^": {0, -1}, ">": {1, 0}, "v": {0, 1}}
 	costs      = map[string]map[string]int{

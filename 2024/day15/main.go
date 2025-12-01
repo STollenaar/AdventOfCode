@@ -11,16 +11,8 @@ type Point struct {
 	kind string
 }
 
-type Grid struct {
-	internal.Grid[*Point]
-}
-
-type Queue struct {
-	internal.Queue[*Point]
-}
-
 var (
-	gridP1, gridP2 Grid
+	gridP1, gridP2 internal.Grid[*Point]
 
 	moves []string
 
@@ -79,15 +71,6 @@ func main() {
 	}
 	solvePart1()
 	solvePart2()
-}
-
-func (g *Grid) print() {
-	for _, row := range g.Rows {
-		for _, c := range row {
-			fmt.Print(c.kind)
-		}
-		fmt.Println()
-	}
 }
 
 func solvePart1() {
@@ -251,7 +234,7 @@ func getConnectedBoxesSameRow(start *Point) []*Point {
 
 func getFullBoxVertical(start *Point, dy int) []*Point {
 	visited := make(map[string]bool) // Track visited points using their "x,y" key
-	queue := &Queue{}
+	queue := &internal.Queue[*Point]{}
 
 	queue.EqualFunction = func(a, b *Point) bool {
 		return a == b

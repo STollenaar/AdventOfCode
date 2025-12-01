@@ -9,12 +9,8 @@ import (
 	"github.com/STollenaar/AdventOfCode/internal"
 )
 
-type Grid struct {
-	internal.Grid[int]
-}
-
 var (
-	grid   Grid
+	grid   internal.Grid[int]
 	starts [][]int
 	trails = make(map[string][]string)
 )

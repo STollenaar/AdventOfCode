@@ -7,12 +7,8 @@ import (
 	"github.com/STollenaar/AdventOfCode/internal"
 )
 
-type Grid struct {
-	internal.Grid[string]
-}
-
 var (
-	grid     = &Grid{}
+	grid     = &internal.Grid[string]{}
 	antennas = make(map[string][][]int)
 )
 

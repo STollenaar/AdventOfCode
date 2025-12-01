@@ -8,12 +8,8 @@ import (
 	"github.com/STollenaar/AdventOfCode/internal"
 )
 
-type Point struct {
-	x, y int
-}
-
 type Robot struct {
-	pos, vel Point
+	pos, vel internal.Point[int]
 }
 
 const (
@@ -39,13 +35,13 @@ func main() {
 		vy, _ := strconv.Atoi(v[1])
 
 		robots = append(robots, &Robot{
-			pos: Point{
-				x: px,
-				y: py,
+			pos: internal.Point[int]{
+				X: px,
+				Y: py,
 			},
-			vel: Point{
-				x: vx,
-				y: vy,
+			vel: internal.Point[int]{
+				X: vx,
+				Y: vy,
 			},
 		})
 	}
@@ -66,33 +62,33 @@ func main() {
 }
 
 func (r *Robot) move() {
-	r.pos.x += r.vel.x
-	r.pos.y += r.vel.y
+	r.pos.X += r.vel.X
+	r.pos.Y += r.vel.Y
 
-	if r.pos.x >= maxX {
-		r.pos.x -= maxX
-	} else if r.pos.x < 0 {
-		r.pos.x += maxX
+	if r.pos.X >= maxX {
+		r.pos.X -= maxX
+	} else if r.pos.X < 0 {
+		r.pos.X += maxX
 	}
-	if r.pos.y >= maxY {
-		r.pos.y -= maxY
-	} else if r.pos.y < 0 {
-		r.pos.y += maxY
+	if r.pos.Y >= maxY {
+		r.pos.Y -= maxY
+	} else if r.pos.Y < 0 {
+		r.pos.Y += maxY
 	}
 }
 
 func (r *Robot) getQuadrant() int {
 
-	if r.pos.x < rH {
-		if r.pos.y < uH {
+	if r.pos.X < rH {
+		if r.pos.Y < uH {
 			return 1
-		} else if r.pos.y > uH {
+		} else if r.pos.Y > uH {
 			return 3
 		}
-	} else if r.pos.x > rH {
-		if r.pos.y < uH {
+	} else if r.pos.X > rH {
+		if r.pos.Y < uH {
 			return 2
-		} else if r.pos.y > uH {
+		} else if r.pos.Y > uH {
 			return 4
 		}
 	}

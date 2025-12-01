@@ -11,7 +11,7 @@ func main() {
 	lines := internal.Reader()
 	pos := 50
 	var pt1, pt2 int
-	fmt.Printf("Start Pos: %d\n", pos)
+	// fmt.Printf("Start Pos: %d\n", pos)
 	for _, line := range lines {
 		dir := string(line[0])
 		amount, _ := strconv.Atoi(line[1:])
@@ -25,12 +25,10 @@ func main() {
 		raw := oldPos + delta
 		pos = ((raw % 100) + 100) % 100
 
-		// Part1: ended exactly on 0
 		if pos == 0 {
 			pt1++
 		}
 
-		// Part2: count each position visited that is position 0
 		if delta > 0 {
 			for i := 1; i <= delta; i++ {
 				newPos := (oldPos + i) % 100
