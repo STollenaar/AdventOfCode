@@ -1,5 +1,5 @@
 module github.com/STollenaar/AdventOfCode
 
-go 1.21.1
+go 1.25.0
 
-require github.com/STollenaar/AdventOfCode/internal v0.0.0-20231215174800-20bcb93c9d2d
+require github.com/STollenaar/AdventOfCode/internal v0.0.0-20241227014823-a0c05c1cf33d
