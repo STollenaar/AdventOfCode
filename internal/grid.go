@@ -250,3 +250,62 @@ func (g *Grid[T]) ShiftColumnsRight() {
 		g.Rows[y][0] = last
 	}
 }
+
+// GetAdjacent get the direct 4 adjacent tiles
+func (g *Grid[T]) GetAdjacent(x, y int) (adj map[string]T) {
+	adj = make(map[string]T)
+	// Check top-left
+	if y-1 >= 0 {
+		rows := g.Rows[y-1]
+		adj["u"] = rows[x]
+	}
+	// Check left and right
+	rows := g.Rows[y]
+	if x-1 >= 0 {
+		adj["l"] = rows[x-1]
+	}
+	if x+1 < len(rows) {
+		adj["r"] = rows[x+1]
+	}
+	// Check bottom-left, bottom, bottom-right
+	if y+1 < len(g.Rows) {
+		adj["b"] = g.Rows[y+1][x]
+	}
+	return
+}
+
+// GetNeighbours get the octogonal tiles
+func (g *Grid[T]) GetNeighbours(x, y int) (adj map[string]T) {
+	adj = make(map[string]T)
+	// Check top-left
+	if y-1 >= 0 {
+		rows := g.Rows[y-1]
+		adj["u"] = rows[x]
+		if x-1 >= 0 {
+			adj["ul"] = rows[x-1]
+		}
+		if x+1 < len(rows) {
+			adj["ur"] = rows[x+1]
+		}
+	}
+	// Check left and right
+	rows := g.Rows[y]
+	if x-1 >= 0 {
+		adj["l"] = rows[x-1]
+	}
+	if x+1 < len(rows) {
+		adj["r"] = rows[x+1]
+	}
+	// Check bottom-left, bottom, bottom-right
+	if y+1 < len(g.Rows) {
+		rows := g.Rows[y+1]
+		adj["b"] = rows[x]
+		if x-1 >= 0 {
+			adj["bl"] = rows[x-1]
+		}
+		if x+1 < len(rows) {
+			adj["br"] = rows[x+1]
+		}
+	}
+	return
+}
