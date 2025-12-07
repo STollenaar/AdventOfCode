@@ -1,2 +1,4 @@
-github.com/STollenaar/AdventOfCode/internal v0.0.0-20241227014823-a0c05c1cf33d h1:AO2pOCkbHlTrjlweLA+YrOWBhpXZn8zhWBk5DU8JdjA=
-github.com/STollenaar/AdventOfCode/internal v0.0.0-20241227014823-a0c05c1cf33d/go.mod h1:J3k44rv8fo54dKG0sn4MFlcxVfyxJGIA1aTWLXk3SQo=
+github.com/emicklei/dot v1.10.0 h1:z17n0ce/FBMz3QbShSzVGhiW447Qhu7fljzvp3Gs6ig=
+github.com/emicklei/dot v1.10.0/go.mod h1:DeV7GvQtIw4h2u73RKBkkFdvVAz0D9fzeJrgPW6gy/s=
+golang.org/x/exp v0.0.0-20251125195548-87e1e737ad39 h1:DHNhtq3sNNzrvduZZIiFyXWOL9IWaDPHqTnLJp+rCBY=
+golang.org/x/exp v0.0.0-20251125195548-87e1e737ad39/go.mod h1:46edojNIoXTNOhySWIWdix628clX9ODXwPsQuG6hsK0=
