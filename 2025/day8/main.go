@@ -82,7 +82,7 @@ func clusterByProximity(edges []*Edge) []int {
 
 	// Union all pairs
 	limit := min(1000, len(edges))
-	for i := 0; i < limit; i++ {
+	for i := range limit {
 		dsu.Union(edges[i].A, edges[i].B)
 	}
 
