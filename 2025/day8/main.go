@@ -11,10 +11,10 @@ import (
 )
 
 type Node struct {
-	X, Y, Z int
+	X, Y, Z, ID int
 }
 
-type Pair struct {
+type Edge struct {
 	A, B     *Node
 	Distance float64
 }
@@ -24,66 +24,50 @@ var nodes []*Node
 func main() {
 	lines := internal.Reader()
 
-	for _, line := range lines {
+	for i, line := range lines {
 		coords := strings.Split(line, ",")
 		x, _ := strconv.Atoi(coords[0])
 		y, _ := strconv.Atoi(coords[1])
 		z, _ := strconv.Atoi(coords[2])
 		nodes = append(nodes, &Node{
-			X: x,
-			Y: y,
-			Z: z,
+			X:  x,
+			Y:  y,
+			Z:  z,
+			ID: i,
 		})
 	}
 
-	pairs := computeClosestPairs(nodes)
-	// for _, p := range pailrs {
-	// 	fmt.Printf("Nodes %d & %d => %d\n", p.A, p.B, p.Distance)
-	// }
+	edges := generateEdges(nodes)
 
-	circuits := clusterByProximity(pairs)
+	circuits := clusterByProximity(edges)
 	X := 3
+	part1 := 1
 	for i := 0; i < X && i < len(circuits); i++ {
 		fmt.Printf("Circuit %d has %d junctions\n", i+1, circuits[i])
+		part1 *= circuits[i]
 	}
+	fmt.Printf("Part1: %d\n", part1)
+
+	last := clusterAll(edges)
+	fmt.Printf("Part2: %d\n", last.A.X*last.B.X)
 }
 
-func computeClosestPairs(nodes []*Node) []*Pair {
-	pairs := make([]*Pair, 0, len(nodes))
+func generateEdges(nodes []*Node) (edges []*Edge) {
 
-	for _, a := range nodes {
-		var best *Node
-		minDist := math.MaxFloat64
-
-		for _, b := range nodes {
-			if a == b {
-				continue
-			}
-			d := distance(a, b)
-			if d < minDist {
-				minDist = d
-				best = b
-			}
-		}
-		if !contains(pairs, a, best) {
-			pairs = append(pairs, &Pair{
-				A:        a,
-				B:        best,
-				Distance: minDist,
+	for i := 0; i < len(nodes)-1; i++ {
+		for j := i + 1; j < len(nodes); j++ {
+			edges = append(edges, &Edge{
+				A:        nodes[i],
+				B:        nodes[j],
+				Distance: distance(nodes[i], nodes[j]),
 			})
 		}
 	}
 
-	return pairs
-}
-
-func contains(pairs []*Pair, a, b *Node) bool {
-	for _, pair := range pairs {
-		if pair.A == b && pair.B == a {
-			return true
-		}
-	}
-	return false
+	sort.Slice(edges, func(i, j int) bool {
+		return edges[i].Distance < edges[j].Distance
+	})
+	return
 }
 
 func distance(a, b *Node) float64 {
@@ -92,16 +76,21 @@ func distance(a, b *Node) float64 {
 	dz := a.Z - b.Z
 	return math.Sqrt(float64(dx*dx + dy*dy + dz*dz))
 }
-
-func clusterByProximity(pairs []*Pair) []int {
+func clusterByProximity(edges []*Edge) []int {
 	// DSU MUST contain every node, not just those in pairs
 	dsu := NewDSU(nodes)
 
 	// Union all pairs
-	for _, p := range pairs {
-		dsu.Union(p.A, p.B)
+	limit := min(1000, len(edges))
+	for i := 0; i < limit; i++ {
+		dsu.Union(edges[i].A, edges[i].B)
 	}
 
+	circuitMap := make(map[int]int)
+	for i := 0; i < len(nodes); i++ {
+		root := dsu.Find(i)
+		circuitMap[root.ID]++
+	}
 	// Count components
 	sizes := dsu.ComponentSizes()
 
@@ -115,52 +104,68 @@ func clusterByProximity(pairs []*Pair) []int {
 	return circuits
 }
 
+func clusterAll(edges []*Edge) *Edge {
+	dsu := NewDSU(nodes)
+	var lastMerged *Edge
+
+	for _, e := range edges {
+		rootA := dsu.Find(e.A.ID)
+		rootB := dsu.Find(e.B.ID)
+		if rootA != rootB {
+			dsu.Union(e.A, e.B)
+			lastMerged = e
+		}
+	}
+
+	return lastMerged
+}
+
 type DSU struct {
-	parent map[*Node]*Node
-	size   map[*Node]int
+	parent map[int]*Node
+	size   map[int]int
 }
 
 func NewDSU(nodes []*Node) *DSU {
-	parent := make(map[*Node]*Node)
-	size := make(map[*Node]int)
+	parent := make(map[int]*Node)
+	size := make(map[int]int)
 
 	for _, n := range nodes {
-		parent[n] = n
-		size[n] = 1
+		parent[n.ID] = n
+		size[n.ID] = 1
 	}
 
 	return &DSU{parent, size}
 }
 
-func (d *DSU) Find(n *Node) *Node {
-	if d.parent[n] != n {
-		d.parent[n] = d.Find(d.parent[n])
+func (d *DSU) Find(id int) *Node {
+	if d.parent[id].ID != id {
+		d.parent[id] = d.Find(d.parent[id].ID)
 	}
-	return d.parent[n]
+	return d.parent[id]
 }
 
 func (d *DSU) Union(a, b *Node) {
-	ra := d.Find(a)
-	rb := d.Find(b)
+	ra := d.Find(a.ID)
+	rb := d.Find(b.ID)
 
 	if ra == rb {
 		return
 	}
 
 	// Union by size
-	if d.size[ra] < d.size[rb] {
+	if d.size[ra.ID] < d.size[rb.ID] {
 		ra, rb = rb, ra
 	}
 
-	d.parent[rb] = ra
-	d.size[ra] += d.size[rb]
+	d.parent[rb.ID] = ra
+	d.size[ra.ID] += d.size[rb.ID]
 }
 
-func (d *DSU) ComponentSizes() map[*Node]int {
-	result := make(map[*Node]int)
+func (d *DSU) ComponentSizes() map[int]int {
+	result := make(map[int]int)
 	for n := range d.parent {
 		r := d.Find(n)
-		result[r] = d.size[r]
+		result[r.ID] = d.size[r.ID]
 	}
 	return result
 }
